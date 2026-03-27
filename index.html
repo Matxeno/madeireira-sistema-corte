@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Corte - Madeireira Geovane</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body { font-family: Arial; margin: 0; background: #f4f4f4; }
+
+    /* Topo sem fundo */
+    .topbar {
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .topbar img {
+      height: 50px;
+      border-radius: 6px;
+    }
+
+    /* Destaque só no título */
+    .topbar-title {
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      background: #1b5e20;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #2e4d34;
+      margin-top: 5px;
+      font-size: 18px;
+    }
+
+    .container { display: flex; gap: 20px; padding: 20px; }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    input, button {
+      padding: 12px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      cursor: pointer;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #1b5e20;
+      transform: scale(1.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    th {
+      background: #2e4d34;
+      color: white;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .status {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .pago { background: #c8e6c9; color: #1b5e20; }
+    .emcorte { background: #fff3cd; color: #856404; }
+    .aguardando { background: #f8d7da; color: #721c24; }
+
+    /* Validação */
+    .ok { background: #c8e6c9; color: #1b5e20; }
+    .erro { background: #f8d7da; color: #721c24; }
+
+  </style>
+</head>
+<body>
+
+<!-- TOPO -->
+<div style="background:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+  <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:center; padding:10px 20px; position:relative;">
+    
+    <!-- Logo esquerda -->
+    <img src="madeireira-geovane-logotipo-01.avif" alt="Logo" 
+         style="height:50px; border-radius:6px; position:absolute; left:20px;">
+
+    <!-- Título central -->
+    <span class="topbar-title">SISTEMA DE CORTE</span>
+
+  </div>
+</div>
+</div>
+
+<div class="container">
+
+  <!-- Upload -->
+  <div class="card">
+    <h2>Upload Plano de Corte</h2>
+    <input type="number" id="pedidoId" placeholder="Número do Pedido">
+    <input type="file" id="arquivo">
+    <button onclick="enviarPlano()">Enviar</button>
+    <p id="statusUpload"></p>
+  </div>
+
+  <!-- Filas -->
+  <div class="card">
+    <h2>Fila de Corte (Pedidos Expresso)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Pedido</th>
+          <th>Status</th>
+          <th>Validação</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaExpresso"></tbody>
+    </table>
+
+    <h2 style="margin-top:20px;">Fila de Corte (Pedidos Programados)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Pedido</th>
+          <th>Status</th>
+          <th>Validação</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaProgramado"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+
+async function enviarPlano() {
+  const pedidoId = document.getElementById("pedidoId").value;
+
+  if (!pedidoId) {
+    alert("Digite o pedido");
+    return;
+  }
+
+  document.getElementById("statusUpload").innerText =
+    "Plano enviado (simulação) para pedido " + pedidoId;
+}
+
+function getStatusClass(status) {
+  if (status === "PAGO") return "status pago";
+  if (status === "EM CORTE") return "status emcorte";
+  return "status aguardando";
+}
+
+function getValidacaoClass(validacao) {
+  if (validacao === "OK") return "status ok";
+  return "status erro";
+}
+
+async function carregarPedidos() {
+  const tabelaExpresso = document.getElementById("tabelaExpresso");
+  const tabelaProgramado = document.getElementById("tabelaProgramado");
+
+  tabelaExpresso.innerHTML = "";
+  tabelaProgramado.innerHTML = "";
+
+  const pedidosExpresso = [
+    { id_pedido: 101, status: "PAGO", validacao: "OK" },
+    { id_pedido: 102, status: "EM CORTE", validacao: "DIVERGENTE" }
+  ];
+
+  const pedidosProgramados = [
+    { id_pedido: 201, status: "AGUARDANDO", validacao: "OK" },
+    { id_pedido: 202, status: "AGUARDANDO", validacao: "DIVERGENTE" }
+  ];
+
+  pedidosExpresso.forEach(p => {
+    tabelaExpresso.innerHTML += `
+      <tr>
+        <td>${p.id_pedido}</td>
+        <td><span class="${getStatusClass(p.status)}">${p.status}</span></td>
+        <td><span class="${getValidacaoClass(p.validacao)}">${p.validacao}</span></td>
+        <td><button onclick="alert('Abrindo plano do pedido ' + ${p.id_pedido})">Abrir</button></td>
+      </tr>
+    `;
+  });
+
+  pedidosProgramados.forEach(p => {
+    tabelaProgramado.innerHTML += `
+      <tr>
+        <td>${p.id_pedido}</td>
+        <td><span class="${getStatusClass(p.status)}">${p.status}</span></td>
+        <td><span class="${getValidacaoClass(p.validacao)}">${p.validacao}</span></td>
+        <td><button onclick="alert('Abrindo plano do pedido ' + ${p.id_pedido})">Abrir</button></td>
+      </tr>
+    `;
+  });
+}
+
+setInterval(carregarPedidos, 5000);
+carregarPedidos();
+
+</script>
+
+</body>
+</html>
