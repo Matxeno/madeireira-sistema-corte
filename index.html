@@ -5,7 +5,7 @@
   <title>Sistema de Corte - Madeireira Geovane</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
-    body { font-family: Arial; margin: 0; background: #f4f4f4; }
+    body { font-family: Arial; margin: 0; background: #f4f4f4; zoom: 1.1; }
 
     /* Topo sem fundo */
     .topbar {
@@ -211,7 +211,7 @@ async function carregarPedidos() {
 
   pedidosExpresso.forEach(p => {
     tabelaExpresso.innerHTML += `
-      <tr>
+      <tr style="background-color: ${p.validacao === 'DIVERGENTE' ? '#ffe5e5' : ''}">
         <td>${p.id_pedido}</td>
         <td><span class="${getStatusClass(p.status)}">${p.status}</span></td>
         <td><span class="${getValidacaoClass(p.validacao)}">${p.validacao}</span></td>
@@ -222,7 +222,7 @@ async function carregarPedidos() {
 
   pedidosProgramados.forEach(p => {
     tabelaProgramado.innerHTML += `
-      <tr>
+      <tr style="background-color: ${p.validacao === 'DIVERGENTE' ? '#ffe5e5' : ''}">
         <td>${p.id_pedido}</td>
         <td><span class="${getStatusClass(p.status)}">${p.status}</span></td>
         <td><span class="${getValidacaoClass(p.validacao)}">${p.validacao}</span></td>
